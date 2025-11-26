@@ -1,17 +1,19 @@
-# algorithms/astar.py
+# Import Necessary Libraries
 import heapq
 import math
 
+# Function to Calculate Heuristic
 def heuristic(a, b):
-    # Manhattan distance (best for grids)
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
+# Function to Perform A* Search
 def astar(grid, start, goal):
     pq = [(0, start)]
     came_from = {start: None}
     cost_so_far = {start: 0}
     explored = 0
 
+    # A* Search Loop
     while pq:
         priority, current = heapq.heappop(pq)
         explored += 1
@@ -40,4 +42,5 @@ def astar(grid, start, goal):
         current = came_from[current]
     path.reverse()
 
+    # Return path and explored count
     return path, explored

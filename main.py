@@ -1,10 +1,60 @@
-# main.py
+# Import Necessary Libraries
 import time
+import tracemalloc
+
+# Import Core Files
 from grid import Grid
 from algorithms.bfs import bfs
 from algorithms.dijkstra import dijkstra
 from algorithms.astar import astar
 
+# Function to Run an Algorithm and Measure Performance
+def run_algorithm(name, func, grid, start, goal, output_file):
+    tracemalloc.start() # Start memory tracking
+    start_time = time.time() # Start time measurement
+
+    path, explored = func(grid, start, goal) # Run the algorithm
+
+    _, peak_memory = tracemalloc.get_traced_memory() # Get peak memory usage
+    tracemalloc.stop() # Stop memory tracking
+
+    elapsed = time.time() - start_time # Calculate elapsed time
+
+    # Save the path to file
+    if path:
+        grid.save_path_to_file(output_file, path, start, goal)
+        moves = len(path) - 1
+    # No path found Error
+    else:
+        moves = None
+
+    # Return performance metrics
+    return {
+        "time": elapsed,
+        "explored": explored,
+        "moves": moves,
+        "memory": peak_memory / 1024,
+    }
+
+# Function to Display Results
+def display_results_simple(results):
+    print("\n==== Summary ====")
+    # Display results in a simple table
+    for name, r in results.items():
+        # No path found case
+        if r["moves"] is None:
+            print(f"{name:<10}: No path")
+        else:
+            # Display performance metrics
+            print(
+                f"{name:<10}: "
+                f"{r['time']:.6f}s | "
+                f"{r['explored']} explored | "
+                f"{r['moves']} moves | "
+                f"{r['memory']:.2f}KB"
+            )
+
+# Function to Run Test on the Algorithms
 def run_test(width, height, start, goal):
     grid = Grid(width, height, obstacle_ratio=0.2, weighted=True)
 
@@ -17,26 +67,16 @@ def run_test(width, height, start, goal):
 
     print("\n--- Grid {}x{} ---".format(width, height))
 
-    # BFS
-    t1 = time.time()
-    p1, e1 = bfs(grid, start, goal)
-    t_bfs = time.time() - t1
+    results = {}
+    # Run Algorithms
+    results["A*"] = run_algorithm("A*", astar, grid, start, goal, "astar.txt")
+    results["BFS"] = run_algorithm("BFS", bfs, grid, start, goal, "bfs.txt")
+    results["Dijkstra"] = run_algorithm("Dijkstra", dijkstra, grid, start, goal, "dijkstra.txt")
 
-    # Dijkstra
-    t2 = time.time()
-    p2, e2 = dijkstra(grid, start, goal)
-    t_dij = time.time() - t2
+    # Display Results
+    display_results_simple(results) 
 
-    # A*
-    t3 = time.time()
-    p3, e3 = astar(grid, start, goal)
-    t_astar = time.time() - t3
-
-    # Results
-    print("BFS:      time={:.6f}s explored cells={}".format(t_bfs, e1))
-    print("Dijkstra: time={:.6f}s explored cells={}".format(t_dij, e2))
-    print("A*:       time={:.6f}s explored cells={}".format(t_astar, e3))
-
+# Run Main Code
 if __name__ == "__main__":
     # Define start and goal positions
     start = (0, 0)
