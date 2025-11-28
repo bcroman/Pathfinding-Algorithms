@@ -8,6 +8,7 @@ class Grid:
         self.width = width
         self.height = height
         self.weighted = weighted
+        self.obstacle_ratio = obstacle_ratio
         
         # Generate the grid with obstacles and weights
         self.grid = self._generate_grid(obstacle_ratio)
